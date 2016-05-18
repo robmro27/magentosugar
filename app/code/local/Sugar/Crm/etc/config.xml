@@ -10,7 +10,7 @@
         <jobs>
             <sugarcrm>
                 <schedule>
-                    <cron_expr>* * * * *</cron_expr>
+                    <cron_expr>*/10 * * * *</cron_expr>
                 </schedule>
                 <run>
                     <model>sugarcrm/observer::exportData</model>
