@@ -89,13 +89,8 @@ class Sugar_Crm_Model_Observer {
             $exist = $response->entry_list[0]->id;
             
             if ($exist != '') {
-                //continue;
+                continue;
             }
-            
-            echo '<pre>';
-            print_r($product->getData());
-            echo '</pre>';
-            die;
             
             $store = Mage::app()->getStore('default');
             $request = Mage::getSingleton('tax/calculation')->getRateRequest(null, null, null, $store);
