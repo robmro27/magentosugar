@@ -13,11 +13,6 @@ class Sugar_Crm_Model_Observer {
     const CATALOG_ID = '14a12a1a-ac11-2d5f-37f4-5739a7e55001';
     
     /**
-     * Defined in SugarCRM - "Magento" - supplier
-     */
-    const SUPPLIER_ID = '433ce46c-13e7-9006-9bd6-5739a7d30a3c';
-    
-    /**
      * Defined in SugarCRM - "Magento Products" - category
      */
     const CATEGORY_ID = '171238da-073d-c3ab-a617-5739a72d9f3c';
@@ -31,12 +26,34 @@ class Sugar_Crm_Model_Observer {
     
     const API_URL = 'http://sugarcrm.rmroz.sites.polcode.net/service/v4_1/soap.php';
     
+    /**
+     * Path to images
+     */
+    const SUGAR_IMAGES_PATH = '/opt/home/users/rmroz/repos/sugarcrm/upload/';
+    const MAGENTO_IMAGES_PATH = '/opt/home/users/rmroz/repos/magentosugarcrm/media/catalog/product/';
     
+    /**
+     *
+     * @var SoapClient 
+     */
     private $client = null;
+    
+    /**
+     *
+     * @var string 
+     */
     private $sessionID = null;
     
+    /**
+     *
+     * @var string 
+     */
     private $sugarAccountId = null;
     
+    
+    /**
+     * Connect to sugar
+     */
     private function connect()
     {
         $options = array(
@@ -57,7 +74,9 @@ class Sugar_Crm_Model_Observer {
 
     }
     
-    
+    /**
+     * Get Magento account ID in sugar 
+     */
     private function setAccountId() {
         
         $response = $this->client->get_available_modules($this->sessionID);
@@ -68,11 +87,15 @@ class Sugar_Crm_Model_Observer {
         
     }
     
+    
+    /**
+     * Export products
+     */
     private function exportProducts() {
-        
+
         $productsCollection = Mage::getModel('catalog/product')->getCollection();
         $productsCollection->addAttributeToFilter('created_at', array(
-            'from' => date('Y-m-d',(strtotime ( '-10 day' , strtotime ( date('Y-m-d')) ) )),
+            'from' => date('Y-m-d',(strtotime ( '-1 day' , strtotime ( date('Y-m-d')) ) )),
             'date' => true,
         ));
         $productsCollection->addAttributeToSelect('name')
@@ -109,7 +132,7 @@ class Sugar_Crm_Model_Observer {
                 array("name" => 'relatedcategory_id',"value" => self::CATEGORY_ID),
                 array("name" => 'unit',"value" => 'pieces'),
                 array("name" => 'catalog_id',"value" => self::CATALOG_ID),
-                array("name" => 'supplier_id',"value" => self::SUPPLIER_ID),
+                array("name" => 'supplier_id',"value" => $this->sugarAccountId),
                 array("name" => 'unique_identifier',"value" => $product['sku']),
                 array("name" => 'svnumber',"value" => $product['sku']),
             );
@@ -121,19 +144,14 @@ class Sugar_Crm_Model_Observer {
                 $insertArr[] = array("name" => 'image_filename',"value" => basename($product['image']));
                 $insertArr[] = array("name" => 'image_mime_type',"value" => $this->getMimetype(basename($product['image'])));
                 $this->resize(700, 
-                        '/opt/home/users/rmroz/repos/sugarcrm/upload/' . basename($product['image']), 
-                        '/opt/home/users/rmroz/repos/magentosugarcrm/media/catalog/product/'.$product['image']);
+                        self::SUGAR_IMAGES_PATH . basename($product['image']), 
+                        self::MAGENTO_IMAGES_PATH . $product['image']);
             }
-        
             
             $response = $this->client->set_entry($this->sessionID, 'oqc_Product', $insertArr);
-            
-            
-            
         }
-        
-        
     }
+    
     
     /**
      * Gets image mime type
@@ -155,12 +173,17 @@ class Sugar_Crm_Model_Observer {
         return $mime_types[$extension];
     }
     
+    
+    
+    /**
+     * Export customers
+     */
     private function exportCustomers() {
         
         
         $customerCollection = Mage::getModel('customer/customer')->getCollection();
         $customerCollection->addAttributeToFilter('created_at', array(
-            'from' => date('Y-m-d',(strtotime ( '-10 day' , strtotime ( date('Y-m-d')) ) )),
+            'from' => date('Y-m-d',(strtotime ( '-1 day' , strtotime ( date('Y-m-d')) ) )),
             'date' => true,
         ));
         
@@ -213,6 +236,14 @@ class Sugar_Crm_Model_Observer {
         
     }
     
+    
+    /**
+     * 
+     * @param int $newWidth
+     * @param string $targetFile
+     * @param sstring $originalFile
+     * @throws Exception
+     */
     private function resize($newWidth, $targetFile, $originalFile) {
 
         $info = getimagesize($originalFile);
@@ -249,7 +280,9 @@ class Sugar_Crm_Model_Observer {
     }
     
     
-    
+    /**
+     * Export
+     */
     public function exportData() {
         
         try {
@@ -257,17 +290,14 @@ class Sugar_Crm_Model_Observer {
             $this->connect();
             $this->setAccountId();
             
-            //$this->exportCustomers();
-            
+            $this->exportCustomers();
             $this->exportProducts();
-            
             
         } catch (\Exception $ex) {
             
             echo '<pre>';
             print_r($ex->getMessage());
             echo '</pre>';
-            die;
             
         }
         
