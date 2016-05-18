@@ -205,7 +205,7 @@ class Sugar_Crm_Model_Observer {
                 '',0,array(),10,-1
             );
             
-            if ($response->entry_list[0]->id != '') {
+            if ($exist->entry_list[0]->id != '') {
                 continue;
             }
             
