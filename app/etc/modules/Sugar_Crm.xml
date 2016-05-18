@@ -1,0 +1,8 @@
+<config>
+  <modules>
+    <Sugar_Crm>
+      <active>true</active>
+      <codePool>local</codePool>
+    </Sugar_Crm>
+  </modules>
+</config>

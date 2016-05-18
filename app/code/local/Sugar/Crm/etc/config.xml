@@ -1,0 +1,21 @@
+<config>
+    <global>
+        <models>
+            <sugarcrm>
+                <class>Sugar_Crm_Model</class>
+            </sugarcrm>                         
+        </models>
+    </global>
+    <crontab>
+        <jobs>
+            <sugarcrm>
+                <schedule>
+                    <cron_expr>* * * * *</cron_expr>
+                </schedule>
+                <run>
+                    <model>sugarcrm/observer::exportData</model>
+                </run>
+            </sugarcrm>
+        </jobs>
+    </crontab>
+</config>
