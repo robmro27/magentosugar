@@ -96,11 +96,6 @@ class Sugar_Crm_Model_Observer {
             $request = Mage::getSingleton('tax/calculation')->getRateRequest(null, null, null, $store);
             $percent = Mage::getSingleton('tax/calculation')->getRate($request->setProductClassId($product['tax_class_id']));
             
-            
-            $productBean->image_unique_filename = basename($src);
-            $productBean->image_filename = basename($src);
-            $productBean->image_mime_type = $this->getMimetype($magentoProductImages[0]->file);
-            
             $insertArr = array(
                 array("name" => 'name',"value" => $product['name']),
                 array("name" => 'date_entered',"value" => date('Y-m-d')),
@@ -117,16 +112,22 @@ class Sugar_Crm_Model_Observer {
                 array("name" => 'supplier_id',"value" => self::SUPPLIER_ID),
                 array("name" => 'unique_identifier',"value" => $product['sku']),
                 array("name" => 'svnumber',"value" => $product['sku']),
-                array("name" => 'image_unique_filename',"value" => basename($product['image'])),
-                array("name" => 'image_filename',"value" => basename($product['image'])),
-                array("name" => 'image_mime_type',"value" => $this->getMimetype(basename($product['image']))),
             );
+            
+            
+            
+            if ($product['image'] != 'no_selection') {
+                $insertArr[] = array("name" => 'image_unique_filename',"value" => basename($product['image']));
+                $insertArr[] = array("name" => 'image_filename',"value" => basename($product['image']));
+                $insertArr[] = array("name" => 'image_mime_type',"value" => $this->getMimetype(basename($product['image'])));
+                $this->resize(700, 
+                        '/opt/home/users/rmroz/repos/sugarcrm/upload/' . basename($product['image']), 
+                        '/opt/home/users/rmroz/repos/magentosugarcrm/media/catalog/product/'.$product['image']);
+            }
         
+            
             $response = $this->client->set_entry($this->sessionID, 'oqc_Product', $insertArr);
             
-            $this->resize(700, 
-                    '/opt/home/users/rmroz/repos/sugarcrm/upload/' . basename($product['image']), 
-                    '/opt/home/users/rmroz/repos/magentosugarcrm/media/catalog/product/'.$product['image']);
             
             
         }
